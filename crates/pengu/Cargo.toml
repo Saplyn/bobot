@@ -1,0 +1,8 @@
+[package]
+name = "pengu"
+version = "0.0.0"
+description = "A crate for working with QQ Bot"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]

@@ -1,0 +1,8 @@
+[package]
+name = "novus"
+version = "0.0.0"
+description = "A crate for working with Supabase"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]

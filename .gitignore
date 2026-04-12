@@ -1,0 +1,12 @@
+# Environment variable files
+.env*
+
+# Project local PATH
+/.bin/
+
+# Rust build files
+/target/
+
+# Bun/Node dependencies
+/node_modules/
+

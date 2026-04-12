@@ -1,0 +1,12 @@
+[workspace]
+members = ["crates/novus", "crates/pengu", "bobot/core", "bobot/callback"]
+resolver = "3"
+
+[workspace.package]
+authors = ["Saplyn"]
+edition = "2024"
+
+[workspace.dependencies]
+bobot-core = { path = "./bobot/core/" }
+novus = { path = "./crates/novus/" }
+pengu = { path = "./crates/pengu/" }
