@@ -1,0 +1,37 @@
+name: Deploy Bobot Callback
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_DIR: bobot/callback
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Obtain Latest Wrangler Version
+        id: get_wrangler_version
+        run: echo "version=$(npm view wrangler version)" >> "$GITHUB_OUTPUT"
+
+      - name: Add Rust Nightly Component
+        run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+
+      - name: Build & Deploy to Cloudflare Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          workingDirectory: ${{ env.PROJECT_DIR }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: ${{ steps.get_wrangler_version.outputs.version }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
