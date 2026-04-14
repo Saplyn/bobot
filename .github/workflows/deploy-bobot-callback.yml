@@ -13,9 +13,6 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,4 +31,8 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           wranglerVersion: ${{ steps.get_wrangler_version.outputs.version }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: >
+            deploy --message "Deployed on GitHub Action
+            by ${{ github.actor }}
+            from ${{ github.repository }}:${{ github.sha }}
+            - ${{ github.event.head_commit.message }}"
