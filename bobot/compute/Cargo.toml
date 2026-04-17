@@ -1,5 +1,5 @@
 [package]
-name = "bobot-callback"
+name = "bobot-compute"
 edition.workspace = true
 authors.workspace = true
 publish = false

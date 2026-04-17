@@ -7,7 +7,7 @@ on:
       - main
 
 env:
-  PROJECT_DIR: bobot/callback
+  PROJECT_DIR: bobot/compute
 
 jobs:
   deploy:

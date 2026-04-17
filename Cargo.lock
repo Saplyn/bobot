@@ -63,7 +63,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bobot-callback"
+name = "bobot-compute"
 version = "0.0.0"
 dependencies = [
  "axum",

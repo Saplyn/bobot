@@ -1,4 +1,5 @@
 # Wrangler build files
 /build/
+/dist/
 /.wrangler/
 
