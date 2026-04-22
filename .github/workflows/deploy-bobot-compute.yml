@@ -1,4 +1,4 @@
-name: Deploy Bobot Callback
+name: Deploy Bobot Compute
 
 on:
   workflow_dispatch:
