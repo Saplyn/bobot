@@ -13,8 +13,8 @@ use tower::{Layer, Service};
 type MakeSpanFn<Body> = fn(req: &http::Request<Body>) -> tracing::Span;
 type OnRequestFn<Body> = fn(req: &http::Request<Body>, span: &tracing::Span);
 type OnResponseFn<Body> =
-    fn(resp: &http::Response<Body>, elapsed: web_time::Duration, span: &tracing::Span);
-type OnErrorFn<Err> = fn(err: &Err, elapsed: web_time::Duration, span: &tracing::Span);
+    fn(resp: &http::Response<Body>, latency: web_time::Duration, span: &tracing::Span);
+type OnErrorFn<Err> = fn(err: &Err, latency: web_time::Duration, span: &tracing::Span);
 
 // LYN: Trace Layer
 
@@ -200,18 +200,18 @@ where
         let this = self.project();
         let _guard = this.span.enter();
         let result = ready!(this.resp_fut.poll(cx));
-        let elapsed = this.start.elapsed();
+        let latency = this.start.elapsed();
 
         match result {
             Ok(resp) => {
                 if let Some(on_response) = this.on_response.take() {
-                    on_response(&resp, elapsed, this.span);
+                    on_response(&resp, latency, this.span);
                 }
                 Poll::Ready(Ok(resp))
             }
             Err(err) => {
                 if let Some(on_error) = this.on_error.take() {
-                    on_error(&err, elapsed, this.span);
+                    on_error(&err, latency, this.span);
                 }
                 Poll::Ready(Err(err))
             }
