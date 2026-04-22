@@ -10,7 +10,14 @@ pub async fn handler(
 ) -> axum::response::Response {
     let span = span!(Level::DEBUG, "qqbot-callback");
 
-    span.in_scope(|| debug!(message = "Handling callback", operation = ?payload.op_code));
+    span.in_scope(|| {
+        debug!(
+            message = "Handling callback",
+            operation = ?payload.op_code,
+            event_id = ?payload.event_id,
+            event_type = ?payload.event_type
+        );
+    });
 
     if !payload.valid() {
         span.in_scope(|| debug!(message = "Reject because payload is invalid"));
