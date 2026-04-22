@@ -79,7 +79,7 @@ where
                 .get(BotClient::HEADER_SIGNATURE_STRING)
                 .and_then(|v| v.to_str().ok())
             else {
-                span.in_scope(|| debug!(message = "reject because no signature string header"));
+                span.in_scope(|| debug!(message = "Reject because no signature string header"));
                 return Ok(http::StatusCode::UNAUTHORIZED.into_response());
             };
 
@@ -88,14 +88,14 @@ where
                 .get(BotClient::HEADER_SIGNATURE_TIMESTAMP)
                 .and_then(|v| v.to_str().ok())
             else {
-                span.in_scope(|| debug!(message = "reject because no signature timestamp header"));
+                span.in_scope(|| debug!(message = "Reject because no signature timestamp header"));
                 return Ok(http::StatusCode::UNAUTHORIZED.into_response());
             };
 
             let body = match to_bytes(body, usize::MAX).await {
                 Ok(body) => body,
                 Err(err) => {
-                    span.in_scope(|| warn!(message = "failed to read body", error = %err));
+                    span.in_scope(|| warn!(message = "Failed to read body", error = %err));
                     return Ok(http::StatusCode::BAD_REQUEST.into_response());
                 }
             };
@@ -104,7 +104,7 @@ where
             message.extend_from_slice(ts.as_bytes());
             message.extend_from_slice(body.iter().as_slice());
             if !qqbot.validate_signature(message.iter().as_slice(), sig) {
-                span.in_scope(|| debug!(message = "reject because signature validation failed"));
+                span.in_scope(|| debug!(message = "Reject because signature validation failed"));
                 return Ok(http::StatusCode::UNAUTHORIZED.into_response());
             }
 

@@ -17,10 +17,10 @@ pub fn router(state: AppState) -> axum::Router {
         |req| span!(Level::DEBUG, "request", method = %req.method(), uri = %req.uri()),
     )
     .on_request(|_req, _| {
-        info!(message = "started processing request");
+        info!(message = "Started processing request");
     })
-    .on_response(|_resp, elapsed, _| {
-        info!(message = "finished processing request", ?elapsed);
+    .on_response(|resp, elapsed, _| {
+        info!(message = "Finished processing request", status_code = %resp.status(), ?elapsed);
     });
 
     let cors = CorsLayer::new().allow_methods([http::Method::GET, http::Method::POST]);
