@@ -1,20 +1,22 @@
-use axum::{routing::get, Router};
 use tower_service::Service;
-use worker::*;
+use worker::event;
 
-fn router() -> Router {
-    Router::new().route("/", get(root))
-}
+use crate::primary::{init::init, router::router, state::AppState};
+
+mod primary;
+mod routes;
+mod services;
 
 #[event(fetch)]
 async fn fetch(
-    req: HttpRequest,
-    _env: Env,
-    _ctx: Context,
-) -> Result<axum::http::Response<axum::body::Body>> {
-    Ok(router().call(req).await?)
-}
+    req: worker::HttpRequest,
+    env: worker::Env,
+    _ctx: worker::Context,
+) -> worker::Result<axum::http::Response<axum::body::Body>> {
+    init();
 
-pub async fn root() -> &'static str {
-    "Hello Axum!"
+    let state = AppState::new(env);
+    let mut app = router(state);
+
+    Ok(app.call(req).await?)
 }

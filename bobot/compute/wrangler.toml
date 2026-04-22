@@ -5,7 +5,10 @@ main = "build/index.js"
 compatibility_date = "2026-04-12"
 
 [build]
-command = "cargo install \"worker-build@^0.8\" && worker-build --release --panic-unwind"
+command = "cargo install worker-build && worker-build --release --panic-unwind"
+
+[secrets]
+required = ["QQBOT_ID", "QQBOT_SECRET"]
 
 [[routes]]
 pattern = "bobot.saplyn.site"

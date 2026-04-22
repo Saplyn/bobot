@@ -1,14 +1,12 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! `pengu` provides low-level types and client helpers for the QQ Open Platform.
+//!
+//! The crate currently exposes the `bot` module, which covers three main areas:
+//!
+//! - `BotClient`: token refresh, signature validation, and direct message sending.
+//! - `callback_payload`: inbound callback and event payload models.
+//! - `messaging`: outbound message payload models for direct messages.
+//!
+//! The `bot` feature is enabled by default.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+#[cfg(feature = "bot")]
+pub mod bot;

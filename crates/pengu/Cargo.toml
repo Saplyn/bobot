@@ -1,8 +1,26 @@
 [package]
 name = "pengu"
 version = "0.0.0"
-description = "A crate for working with QQ Bot"
+description = "A crate for working with QQ Open Platform"
 edition.workspace = true
 authors.workspace = true
 
+[features]
+default = ["bot"]
+bot = []
+
 [dependencies]
+# Async
+tokio = { version = "1", features = ["sync"] }
+# HTTP
+reqwest = { version = "0.13", features = ["json"] }
+# Crypto
+ed25519-dalek = "3.0.0-pre.6"
+# WASM
+web-time = "1"
+# Rust Pattern
+thiserror = "2"
+# Encoding
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_repr = "0.1"

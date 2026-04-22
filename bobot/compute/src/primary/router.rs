@@ -1,0 +1,32 @@
+use axum::routing::post;
+use tower::ServiceBuilder;
+use tower_http::cors::CorsLayer;
+use tracing::{Level, info, span};
+
+use crate::{
+    primary::state::AppState,
+    routes::qqbot_callback,
+    services::{authorize::AuthoriseLayer, trace::TraceLayer},
+};
+
+#[inline(always)]
+pub fn router(state: AppState) -> axum::Router {
+    let auth = AuthoriseLayer::new(state.qqbot.clone(), |_req| span!(Level::DEBUG, "authorise"));
+
+    let trace = TraceLayer::new(
+        |req| span!(Level::DEBUG, "request", method = %req.method(), uri = %req.uri()),
+    )
+    .on_request(|_req, _| {
+        info!(message = "started processing request");
+    })
+    .on_response(|_resp, elapsed, _| {
+        info!(message = "finished processing request", ?elapsed);
+    });
+
+    let cors = CorsLayer::new().allow_methods([http::Method::GET, http::Method::POST]);
+
+    axum::Router::new()
+        .route("/callback/qqbot", post(qqbot_callback::handler).layer(auth))
+        .layer(ServiceBuilder::new().layer(trace).layer(cors))
+        .with_state(state)
+}
