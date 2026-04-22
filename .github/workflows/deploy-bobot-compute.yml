@@ -17,10 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Obtain Latest Wrangler Version
-        id: get_wrangler_version
-        run: echo "version=$(npm view wrangler version)" >> "$GITHUB_OUTPUT"
-
       - name: Add Rust Nightly Component
         run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
@@ -30,7 +26,7 @@ jobs:
           workingDirectory: ${{ env.PROJECT_DIR }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          wranglerVersion: ${{ steps.get_wrangler_version.outputs.version }}
+          wranglerVersion: latest
           command: >
             deploy --message "Deployed on GitHub Action
             by ${{ github.actor }}
