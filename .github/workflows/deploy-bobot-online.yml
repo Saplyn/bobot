@@ -27,6 +27,9 @@ jobs:
       - name: Build Application
         run: bun run build --preset github_pages
         working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ env.SUPABASE_KEY }}
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v5.0.0
