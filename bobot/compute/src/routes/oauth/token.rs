@@ -46,6 +46,7 @@ pub async fn handler(
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
+    let resp_status = resp.status();
     let token = match resp.json::<serde_json::Value>().await {
         Ok(token) => token,
         Err(error) => {
@@ -55,5 +56,5 @@ pub async fn handler(
     };
 
     debug!(message = "Got QQ's OAuth token response", response = %token);
-    Json(token).into_response()
+    (resp_status, Json(token)).into_response()
 }
