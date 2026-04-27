@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use thiserror::Error;
+use time::{Duration, OffsetDateTime};
 use tokio::sync::RwLock;
 
 pub mod access_token;
@@ -74,32 +75,32 @@ fn derive_signing_key(app_secret: &str) -> ed25519_dalek::SigningKey {
 #[derive(Debug)]
 pub struct AccessToken {
     token: String,
-    expires: web_time::Instant,
+    expires: OffsetDateTime,
 }
 
 impl AccessToken {
     pub fn new(token: String, expires_in_secs: u64) -> Self {
-        let expires = web_time::Instant::now() + web_time::Duration::from_secs(expires_in_secs);
+        let expires = OffsetDateTime::now_utc() + Duration::seconds(expires_in_secs as i64);
 
         Self { token, expires }
     }
     pub fn token(&self) -> &str {
         self.token.as_str()
     }
-    pub fn expires(&self) -> web_time::Instant {
+    pub fn expires(&self) -> OffsetDateTime {
         self.expires
     }
     pub fn nearly_expired(&self) -> bool {
-        let now = web_time::Instant::now();
+        let now = OffsetDateTime::now_utc();
 
         if now >= self.expires {
             return false;
         }
 
-        let remaining = self.expires.saturating_duration_since(now);
-        remaining <= web_time::Duration::from_secs(60)
+        let remaining = self.expires - now;
+        remaining <= Duration::seconds(60)
     }
     pub fn expired(&self) -> bool {
-        web_time::Instant::now() >= self.expires
+        OffsetDateTime::now_utc() >= self.expires
     }
 }
