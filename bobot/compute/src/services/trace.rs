@@ -7,6 +7,7 @@ use std::{
 
 use pin_project::pin_project;
 use tower::{Layer, Service};
+use tracing::{Instrument, instrument::Instrumented};
 
 // LYN: Helpers
 
@@ -152,11 +153,10 @@ where
         let span = (self.make_span)(&req);
 
         let resp_fut = {
-            let _guard = span.enter();
             if let Some(on_request) = self.on_request {
-                on_request(&req, &span);
+                span.in_scope(|| on_request(&req, &span));
             }
-            self.inner.call(req)
+            self.inner.call(req).instrument(span.clone())
         };
 
         TraceServiceFuture {
@@ -179,7 +179,7 @@ where
 #[pin_project]
 pub struct TraceServiceFuture<Fut, Body, Err> {
     #[pin]
-    resp_fut: Fut,
+    resp_fut: Instrumented<Fut>,
     start: time::OffsetDateTime,
     span: tracing::Span,
 
@@ -198,7 +198,6 @@ where
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.project();
-        let _guard = this.span.enter();
         let result = ready!(this.resp_fut.poll(cx));
         let latency = {
             let elapsed = time::OffsetDateTime::now_utc() - *this.start;
@@ -212,13 +211,14 @@ where
         match result {
             Ok(resp) => {
                 if let Some(on_response) = this.on_response.take() {
-                    on_response(&resp, latency, this.span);
+                    this.span
+                        .in_scope(|| on_response(&resp, latency, this.span));
                 }
                 Poll::Ready(Ok(resp))
             }
             Err(err) => {
                 if let Some(on_error) = this.on_error.take() {
-                    on_error(&err, latency, this.span);
+                    this.span.in_scope(|| on_error(&err, latency, this.span));
                 }
                 Poll::Ready(Err(err))
             }
