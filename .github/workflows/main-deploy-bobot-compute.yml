@@ -38,7 +38,7 @@ jobs:
           packageManager: bun
           wranglerVersion: latest
           command: >
-            deploy --message 'Deployed on GitHub Action
+            deploy --message "Deployed on GitHub Action
             by ${{ github.actor }}
             from ${{ github.repository }}:${{ github.sha }}
-            - ${{ github.event.head_commit.message }}'
+            - ${{ github.event.head_commit.message }}"
