@@ -19,7 +19,7 @@ const supabase = useSupabaseClient();
 
 async function signinWithQQ() {
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: "custom:qq",
+    provider: "custom:bobot",
   });
 
   if (error) console.error(error);
