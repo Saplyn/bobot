@@ -33,4 +33,9 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           wranglerVersion: latest
-          command: deploy --dry-run
+          command: |
+            deploy --message \"Deployed on GitHub Action
+            by ${{ github.actor }}
+            from ${{ github.repository }}:${{ github.sha }}
+            - ${{ github.event.head_commit.message }}\"
+            --dry-run
