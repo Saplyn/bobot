@@ -26,6 +26,9 @@ jobs:
       - name: Add Rust Nightly Component
         run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Build & Dry Run Deploy
         uses: cloudflare/wrangler-action@v3
         with:
@@ -33,6 +36,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           wranglerVersion: latest
+          packageManager: bun
           command: >
             deploy --message 'Deployed on GitHub Action
             by ${{ github.actor }}
