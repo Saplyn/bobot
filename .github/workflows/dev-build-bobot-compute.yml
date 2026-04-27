@@ -20,6 +20,7 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
+          shared-key: "bobot-compute-build-files"
           cache-on-failure: true
 
       - name: Add Rust Nightly Component
