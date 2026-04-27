@@ -10,3 +10,6 @@
 # Bun/Node dependencies
 /node_modules/
 
+# Editor Files
+.idea/
+.vscode/
