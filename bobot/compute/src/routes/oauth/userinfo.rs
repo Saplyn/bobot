@@ -9,7 +9,7 @@ use axum::{
 use tracing::{debug, error, instrument, warn};
 use url::Url;
 
-use crate::primary::{WORKER_SECRET_QQOAUTH_ID, state::AppState};
+use crate::primary::{WORKER_SECRET_QQ_OAUTH_ID, state::AppState};
 
 /// `GET /callback/userinfo`
 #[instrument(skip_all, level = "debug", name = "oauth-userinfo")]
@@ -38,7 +38,7 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
             return http::StatusCode::BAD_REQUEST.into_response();
         }
     };
-    warn!(message = "Got Auth header", ?auth);
+    debug!(message = "Got Auth header", ?auth);
 
     // Reconstruct me (userinfo) URL
     let mut url = match Url::from_str(super::QQ_OAUTH_ME_URL) {
@@ -53,6 +53,7 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
     url_queries.append_pair(super::PARAM_UNIONID, "1");
     url_queries.append_pair(super::PARAM_FMT, "json");
     drop(url_queries);
+    debug!(message = "Reconstructed me (userinfo) URL", %url);
 
     // Call QQ's OAuth me (userinfo) URL
     let resp = match app_state.reqwest.get(url).send().await {
@@ -69,12 +70,13 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
+    debug!(message = "Got QQ's OAuth me (userinfo) response", response = %me);
 
     // Obtain OAuth APP ID from `env.secret`
     let oauth_id = app_state
         .worker
         .env
-        .secret(WORKER_SECRET_QQOAUTH_ID)
+        .secret(WORKER_SECRET_QQ_OAUTH_ID)
         .unwrap_or_else(|e| panic!("{e}"))
         .to_string();
 
@@ -91,6 +93,7 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
     url_queries.append_pair(super::PARAM_CONSUMER_KEY, &oauth_id);
     url_queries.append_pair(super::PARAM_OPENID, me["openid"].as_str().unwrap());
     drop(url_queries);
+    debug!(message = "Reconstructed get_user_info URL", %url);
 
     // Call QQ's OAuth get_user_info URL
     let resp = match app_state.reqwest.get(url).send().await {
@@ -107,6 +110,7 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
+    debug!(message = "Got QQ's get_user_info response", response = %userinfo);
 
     // Merge `me` into `userinfo`
     if !me.is_object() || !userinfo.is_object() {
@@ -121,5 +125,6 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
         userinfo_fields.insert(field.to_owned(), value.to_owned());
     }
 
+    debug!(message = "Merged userinfo response", response = %userinfo);
     Json(userinfo).into_response()
 }

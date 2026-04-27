@@ -8,7 +8,7 @@ compatibility_date = "2026-04-12"
 command = "cargo install worker-build && worker-build --release --panic-unwind"
 
 [secrets]
-required = ["QQBOT_ID", "QQBOT_SECRET", "QQOAUTH_ID"]
+required = ["QQ_BOT_ID", "QQ_BOT_SECRET", "QQ_OAUTH_ID", "QQ_OAUTH_SECRET"]
 
 [[hyperdrive]]
 binding = "BOBOT_STORAGE"

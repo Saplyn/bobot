@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::primary::{WORKER_SECRET_QQBOT_ID, WORKER_SECRET_QQBOT_SECRET};
+use crate::primary::{WORKER_SECRET_QQ_BOT_ID, WORKER_SECRET_QQ_BOT_SECRET};
 
 #[derive(Debug, Clone)]
 #[allow(unused)]
@@ -19,10 +19,10 @@ pub struct AppState {
 impl AppState {
     pub fn new(env: worker::Env, ctx: worker::Context) -> Self {
         let qqbot = pengu::bot::BotClient::new(
-            env.secret(WORKER_SECRET_QQBOT_ID)
+            env.secret(WORKER_SECRET_QQ_BOT_ID)
                 .unwrap_or_else(|e| panic!("{e}"))
                 .to_string(),
-            env.secret(WORKER_SECRET_QQBOT_SECRET)
+            env.secret(WORKER_SECRET_QQ_BOT_SECRET)
                 .unwrap_or_else(|e| panic!("{e}"))
                 .to_string(),
             None,

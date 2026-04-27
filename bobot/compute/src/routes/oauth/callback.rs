@@ -74,7 +74,6 @@ pub async fn handler(
             return http::StatusCode::BAD_REQUEST.into_response();
         }
     };
-
     let mut url_queries = url.query_pairs_mut();
     for (ref key, ref val) in queries {
         url_queries.append_pair(key, val);

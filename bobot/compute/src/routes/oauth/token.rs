@@ -36,7 +36,7 @@ pub async fn handler(
     url_queries.append_pair(super::PARAM_FMT, "json");
     url_queries.append_pair(super::PARAM_NEED_OPENID, "1");
     drop(url_queries);
-    debug!(message = "Reconstructed token URL", %url); // FIXME:
+    debug!(message = "Reconstructed token URL", %url);
 
     // Call QQ's OAuth token URL
     let resp = match app_state.reqwest.get(url).send().await {
@@ -54,6 +54,6 @@ pub async fn handler(
         }
     };
 
-    error!(message = "Got QQ's OAuth token response ", response = %token);
+    debug!(message = "Got QQ's OAuth token response", response = %token);
     Json(token).into_response()
 }
