@@ -13,8 +13,8 @@ use tower::{Layer, Service};
 type MakeSpanFn<Body> = fn(req: &http::Request<Body>) -> tracing::Span;
 type OnRequestFn<Body> = fn(req: &http::Request<Body>, span: &tracing::Span);
 type OnResponseFn<Body> =
-    fn(resp: &http::Response<Body>, latency: web_time::Duration, span: &tracing::Span);
-type OnErrorFn<Err> = fn(err: &Err, latency: web_time::Duration, span: &tracing::Span);
+    fn(resp: &http::Response<Body>, latency: time::Duration, span: &tracing::Span);
+type OnErrorFn<Err> = fn(err: &Err, latency: time::Duration, span: &tracing::Span);
 
 // LYN: Trace Layer
 
@@ -147,7 +147,7 @@ where
     }
 
     fn call(&mut self, req: http::Request<Body>) -> Self::Future {
-        let start = web_time::Instant::now();
+        let start = time::OffsetDateTime::now_utc();
 
         let span = (self.make_span)(&req);
 
@@ -180,7 +180,7 @@ where
 pub struct TraceServiceFuture<Fut, Body, Err> {
     #[pin]
     resp_fut: Fut,
-    start: web_time::Instant,
+    start: time::OffsetDateTime,
     span: tracing::Span,
 
     on_response: Option<OnResponseFn<Body>>,
@@ -200,7 +200,14 @@ where
         let this = self.project();
         let _guard = this.span.enter();
         let result = ready!(this.resp_fut.poll(cx));
-        let latency = this.start.elapsed();
+        let latency = {
+            let elapsed = time::OffsetDateTime::now_utc() - *this.start;
+            if elapsed.is_negative() {
+                time::Duration::ZERO
+            } else {
+                elapsed
+            }
+        };
 
         match result {
             Ok(resp) => {
