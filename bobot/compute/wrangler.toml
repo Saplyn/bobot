@@ -5,7 +5,7 @@ main = "build/index.js"
 compatibility_date = "2026-04-12"
 
 [build]
-command = "cargo install worker-build && worker-build --release --panic-unwind"
+command = "cargo install worker-build && worker-build --profile=wasm-release --panic-unwind"
 
 [secrets]
 required = ["QQ_BOT_ID", "QQ_BOT_SECRET", "QQ_OAUTH_ID", "QQ_OAUTH_SECRET"]

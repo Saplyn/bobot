@@ -7,11 +7,6 @@ publish = false
 [lib]
 crate-type = ["cdylib"]
 
-[profile.release]
-lto = true
-strip = true
-codegen-units = 1
-
 [dependencies]
 # HTTP
 worker = { version = "0.8", features = ['http', 'axum', "d1"] }

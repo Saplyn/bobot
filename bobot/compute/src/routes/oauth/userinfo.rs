@@ -6,7 +6,7 @@ use axum::{
     http::HeaderMap,
     response::{IntoResponse, Response},
 };
-use tracing::{debug, error, instrument, warn};
+use tracing::{debug, error, instrument};
 use url::Url;
 
 use crate::primary::{WORKER_SECRET_QQ_OAUTH_ID, state::AppState};

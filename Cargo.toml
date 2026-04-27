@@ -10,3 +10,8 @@ edition = "2024"
 bobot-core = { path = "./bobot/core/" }
 novus = { path = "./crates/novus/" }
 pengu = { path = "./crates/pengu/" }
+
+[profile.wasm-release]
+inherits = "release"
+lto = true
+codegen-units = 1
