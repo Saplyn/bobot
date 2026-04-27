@@ -1,0 +1,55 @@
+name: Dependency Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+jobs:
+  bun-audit:
+    name: Bun Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Generate Bun Lockfile If Not Exist
+        run: |
+          if [ ! -f bun.lockb ] && [ ! -f bun.lock ]; then
+            echo "No Bun lockfile found. Installing dependencies..."
+            bun install
+          else
+            echo "Bun lockfile exists. Skipping install."
+          fi
+
+      - name: Bun Audit
+        run: bun audit --audit-level=high
+
+  cargo-audit:
+    name: Cargo Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Cargo Bin-Install
+        uses: cargo-bins/cargo-binstall@main
+
+      - name: Setup Cargo Audit
+        run: cargo-binstall cargo-audit --no-confirm
+
+      - name: Generate Cargo Lockfile If Not Exist
+        run: |
+          if [ ! -f Cargo.lock ]; then
+            echo "No Cargo.lock found. Generating..."
+            cargo generate-lockfile
+          else
+            echo "Cargo.lock exists. Skipping generation."
+          fi
+
+      - name: Cargo Audit
+        run: cargo audit --deny warnings

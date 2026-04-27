@@ -1,0 +1,33 @@
+name: Deploy Bobot Compute
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_DIR: bobot/compute
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Add Rust Nightly Component
+        run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+
+      - name: Build & Deploy to Cloudflare Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          workingDirectory: ${{ env.PROJECT_DIR }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: latest
+          command: >
+            deploy --message "Deployed on GitHub Action
+            by ${{ github.actor }}
+            from ${{ github.repository }}:${{ github.sha }}
+            - ${{ github.event.head_commit.message }}"
