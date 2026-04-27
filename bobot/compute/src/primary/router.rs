@@ -1,7 +1,7 @@
 use axum::routing::{get, post};
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use tracing::{Level, info, span};
+use tracing::{Level, debug, span};
 
 use crate::{
     primary::state::AppState,
@@ -17,10 +17,10 @@ pub fn router(state: AppState) -> axum::Router {
         |req| span!(Level::DEBUG, "request", method = %req.method(), uri = %req.uri()),
     )
     .on_request(|_req, _| {
-        info!(message = "Started processing request");
+        debug!(message = "Started processing request");
     })
     .on_response(|resp, latency, _| {
-        info!(message = "Finished processing request", status_code = %resp.status(), %latency);
+        debug!(message = "Finished processing request", status_code = %resp.status(), %latency);
     });
 
     let cors = CorsLayer::new().allow_methods([http::Method::GET, http::Method::POST]);

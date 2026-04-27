@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::primary::{WORKER_SECRET_QQBOT_ID, WORKER_SECRET_QQBOT_SECRET};
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 pub struct WorkerFetch {
     pub env: worker::Env,
     pub ctx: Arc<worker::Context>,

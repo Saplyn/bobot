@@ -7,7 +7,7 @@ use std::{
 use axum::{body::to_bytes, response::IntoResponse};
 use pengu::bot::BotClient;
 use tower::{Layer, Service};
-use tracing::{debug, warn};
+use tracing::{Instrument, debug, warn};
 
 // LYN: Helpers
 
@@ -70,46 +70,49 @@ where
         let qqbot = self.qqbot.clone();
         let make_span = self.make_span;
 
-        Box::pin(async move {
-            let span = make_span(&req);
-            let (parts, body) = req.into_parts();
+        let span = make_span(&req);
+        Box::pin(
+            async move {
+                let (parts, body) = req.into_parts();
 
-            let Some(sig) = parts
-                .headers
-                .get(BotClient::HEADER_SIGNATURE_STRING)
-                .and_then(|v| v.to_str().ok())
-            else {
-                span.in_scope(|| debug!(message = "Reject because no signature string header"));
-                return Ok(http::StatusCode::UNAUTHORIZED.into_response());
-            };
+                let Some(sig) = parts
+                    .headers
+                    .get(BotClient::HEADER_SIGNATURE_STRING)
+                    .and_then(|v| v.to_str().ok())
+                else {
+                    debug!(message = "Reject because no signature string header");
+                    return Ok(http::StatusCode::UNAUTHORIZED.into_response());
+                };
 
-            let Some(ts) = parts
-                .headers
-                .get(BotClient::HEADER_SIGNATURE_TIMESTAMP)
-                .and_then(|v| v.to_str().ok())
-            else {
-                span.in_scope(|| debug!(message = "Reject because no signature timestamp header"));
-                return Ok(http::StatusCode::UNAUTHORIZED.into_response());
-            };
+                let Some(ts) = parts
+                    .headers
+                    .get(BotClient::HEADER_SIGNATURE_TIMESTAMP)
+                    .and_then(|v| v.to_str().ok())
+                else {
+                    debug!(message = "Reject because no signature timestamp header");
+                    return Ok(http::StatusCode::UNAUTHORIZED.into_response());
+                };
 
-            let body = match to_bytes(body, usize::MAX).await {
-                Ok(body) => body,
-                Err(err) => {
-                    span.in_scope(|| warn!(message = "Failed to read body", error = %err));
-                    return Ok(http::StatusCode::BAD_REQUEST.into_response());
+                let body = match to_bytes(body, usize::MAX).await {
+                    Ok(body) => body,
+                    Err(err) => {
+                        warn!(message = "Failed to read body", error = %err);
+                        return Ok(http::StatusCode::BAD_REQUEST.into_response());
+                    }
+                };
+
+                let mut message = Vec::new();
+                message.extend_from_slice(ts.as_bytes());
+                message.extend_from_slice(body.iter().as_slice());
+                if !qqbot.validate_signature(message.iter().as_slice(), sig) {
+                    debug!(message = "Reject because signature validation failed");
+                    return Ok(http::StatusCode::UNAUTHORIZED.into_response());
                 }
-            };
 
-            let mut message = Vec::new();
-            message.extend_from_slice(ts.as_bytes());
-            message.extend_from_slice(body.iter().as_slice());
-            if !qqbot.validate_signature(message.iter().as_slice(), sig) {
-                span.in_scope(|| debug!(message = "Reject because signature validation failed"));
-                return Ok(http::StatusCode::UNAUTHORIZED.into_response());
+                let req = http::Request::from_parts(parts, axum::body::Body::from(body));
+                inner.call(req).await
             }
-
-            let req = http::Request::from_parts(parts, axum::body::Body::from(body));
-            inner.call(req).await
-        })
+            .instrument(span),
+        )
     }
 }

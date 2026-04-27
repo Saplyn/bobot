@@ -1,11 +1,19 @@
 use tower_service::Service;
-use worker::{event, query};
+use tracing::{info, instrument};
+use worker::event;
 
-use crate::primary::{WORKER_D1_BOBOT_STATEFUL, init::init, router::router, state::AppState};
+use crate::primary::{
+    init::init,
+    job::{self, WorkerScheduled},
+    router::router,
+    state::AppState,
+};
 
 mod primary;
 mod routes;
 mod services;
+
+// LYN: Fetch
 
 #[event(fetch)]
 async fn fetch(
@@ -14,6 +22,17 @@ async fn fetch(
     ctx: worker::Context,
 ) -> worker::Result<axum::http::Response<axum::body::Body>> {
     init();
+    fetch_inner(req, env, ctx).await
+}
+
+#[inline(always)]
+#[instrument(skip_all, level = "debug", name = "fetch")]
+async fn fetch_inner(
+    req: worker::HttpRequest,
+    env: worker::Env,
+    ctx: worker::Context,
+) -> worker::Result<axum::http::Response<axum::body::Body>> {
+    info!(message = "Worker triggered via fetch event");
 
     let state = AppState::new(env, ctx);
     let mut app = router(state);
@@ -21,22 +40,24 @@ async fn fetch(
     Ok(app.call(req).await?)
 }
 
+// LYN: Scheduled
+
 #[event(scheduled)]
-async fn scheduled(event: worker::ScheduledEvent, env: worker::Env, _ctx: worker::ScheduleContext) {
+async fn scheduled(event: worker::ScheduledEvent, env: worker::Env, ctx: worker::ScheduleContext) {
     init();
+    scheduled_inner(event, env, ctx).await
+}
 
-    let stateful = env
-        .d1(WORKER_D1_BOBOT_STATEFUL)
-        .unwrap_or_else(|e| panic!("{e}"));
+#[inline(always)]
+#[instrument(skip_all, level = "debug", name = "scheduled")]
+async fn scheduled_inner(
+    event: worker::ScheduledEvent,
+    env: worker::Env,
+    ctx: worker::ScheduleContext,
+) {
+    info!(message = "Worker triggered via scheduled event");
 
-    let res = query!(
-        &stateful,
-        r#"
-            DELETE FROM oauth_redirects
-            WHERE expiration <= datetime('now');
-        "#,
-    )
-    .unwrap_or_else(|e| panic!("{e}"))
-    .all()
-    .await;
+    let worker = WorkerScheduled { event, env, ctx };
+
+    job::cleanup_stale_oauth_redirects_mapping(&worker).await;
 }

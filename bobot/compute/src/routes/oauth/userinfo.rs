@@ -6,50 +6,45 @@ use axum::{
     http::HeaderMap,
     response::{IntoResponse, Response},
 };
-use tracing::{Level, debug, error, span, warn};
+use tracing::{debug, error, instrument, warn};
 use url::Url;
 
 use crate::primary::{WORKER_SECRET_QQOAUTH_ID, state::AppState};
 
 /// `GET /callback/userinfo`
+#[instrument(skip_all, level = "debug", name = "oauth-userinfo")]
 #[worker::send]
 pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> Response {
-    let span = span!(Level::DEBUG, "oauth-userinfo");
-
     // Extract token from authorization header
     let Some(auth) = headers.get("authorization") else {
-        span.in_scope(|| debug!(message = "Reject because no authorization header found"));
+        debug!(message = "Reject because no authorization header found");
         return http::StatusCode::BAD_REQUEST.into_response();
     };
     let token = match auth.to_str() {
         Ok(auth) => {
             let mut split = auth.split(' ');
             if split.next().is_none() {
-                span.in_scope(|| {
-                    debug!(message = "Reject because of malformed authorization header (no bearer)")
-                });
+                debug!(message = "Reject because of malformed authorization header (no bearer)");
                 return http::StatusCode::BAD_REQUEST.into_response();
             }
             let Some(token) = split.next() else {
-                span.in_scope(|| {
-                    debug!(message = "Reject because of malformed authorization header (no token)")
-                });
+                debug!(message = "Reject because of malformed authorization header (no token)");
                 return http::StatusCode::BAD_REQUEST.into_response();
             };
             token.to_owned()
         }
         Err(error) => {
-            span.in_scope(|| debug!(message = "Reject because no could not parse authorization header", %error));
+            debug!(message = "Reject because no could not parse authorization header", %error);
             return http::StatusCode::BAD_REQUEST.into_response();
         }
     };
-    span.in_scope(|| warn!(message = "Got Auth header", ?auth));
+    warn!(message = "Got Auth header", ?auth);
 
     // Reconstruct me (userinfo) URL
     let mut url = match Url::from_str(super::QQ_OAUTH_ME_URL) {
         Ok(url) => url,
         Err(error) => {
-            span.in_scope(|| error!(message = "Failed parse QQ's OAuth me (userinfo) URL", %error));
+            error!(message = "Failed parse QQ's OAuth me (userinfo) URL", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
@@ -63,18 +58,14 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
     let resp = match app_state.reqwest.get(url).send().await {
         Ok(resp) => resp,
         Err(error) => {
-            span.in_scope(
-                || error!(message = "Failed to call QQ's OAuth me (userinfo) URL", %error),
-            );
+            error!(message = "Failed to call QQ's OAuth me (userinfo) URL", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
     let me = match resp.json::<serde_json::Value>().await {
         Ok(token) => token,
         Err(error) => {
-            span.in_scope(
-                || error!(message = "Failed to parse QQ's OAuth (userinfo) response", %error),
-            );
+            error!(message = "Failed to parse QQ's OAuth (userinfo) response", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
@@ -91,7 +82,7 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
     let mut url = match Url::from_str(super::QQ_USERINFO_URL) {
         Ok(url) => url,
         Err(error) => {
-            span.in_scope(|| error!(message = "Failed parse QQ's get_user_info URL", %error));
+            error!(message = "Failed parse QQ's get_user_info URL", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
@@ -105,29 +96,25 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
     let resp = match app_state.reqwest.get(url).send().await {
         Ok(resp) => resp,
         Err(error) => {
-            span.in_scope(|| error!(message = "Failed to call QQ's get_user_info URL", %error));
+            error!(message = "Failed to call QQ's get_user_info URL", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
     let mut userinfo = match resp.json::<serde_json::Value>().await {
         Ok(userinfo) => userinfo,
         Err(error) => {
-            span.in_scope(
-                || error!(message = "Failed to parse QQ's get_user_info response", %error),
-            );
+            error!(message = "Failed to parse QQ's get_user_info response", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
 
     // Merge `me` into `userinfo`
     if !me.is_object() || !userinfo.is_object() {
-        span.in_scope(|| {
-            error!(
-                message = "Either `me` or `get_user_info` returned a non-object response",
-                %me,
-                get_user_info = %userinfo
-            )
-        });
+        error!(
+            message = "Either `me` or `get_user_info` returned a non-object response",
+            %me,
+            get_user_info = %userinfo
+        );
     }
     let userinfo_fields = userinfo.as_object_mut().unwrap();
     for (field, value) in me.as_object().unwrap() {
