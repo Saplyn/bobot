@@ -1,6 +1,19 @@
 # For detailed configuration reference documentation, visit:
 # https://supabase.com/docs/guides/local-development/cli/config
-project_id = "bobot"
+project_id = "bobot-storage"
+
+[auth]
+site_url = "https://bobo.saplyn.site/signin/confirm"
+additional_redirect_urls = [
+  "http://localhost:*/signin/confirm",
+  "http://127.0.0.1:*/signin/confirm",
+]
 
 [auth.email]
 enable_signup = false
+otp_length = 8
+max_frequency = "1m"
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
