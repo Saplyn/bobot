@@ -3,7 +3,7 @@
     "bobot/online"
   ],
   "devDependencies": {
-    "supabase": "^2.95.3",
-    "wrangler": "^4.85.0"
+    "supabase": "^2.95.5",
+    "wrangler": "^4.86.0"
   }
 }
