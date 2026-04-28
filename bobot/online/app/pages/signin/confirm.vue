@@ -18,8 +18,11 @@ watch(
   user,
   () => {
     if (user.value) {
-      // Redirect to protected page
-      return navigateTo("/");
+      return navigateTo({
+        path: "/",
+        query: {},
+        hash: "",
+      });
     }
   },
   { immediate: true },
