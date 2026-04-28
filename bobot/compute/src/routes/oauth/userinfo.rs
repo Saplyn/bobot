@@ -34,18 +34,11 @@ struct UserInfo<'resp> {
     sub: &'resp str,
     name: &'resp str,
     picture: &'resp str,
+    picture_small: &'resp str,
+    picture_medium: &'resp str,
     email: (),
     email_verified: (),
-    user_metadata: UserInfoMeta<'resp>,
-}
-
-#[derive(Debug, Serialize)]
-struct UserInfoMeta<'resp> {
-    openid: &'resp str,
     unionid: &'resp str,
-    avatar: &'resp str,
-    avatar_small: &'resp str,
-    avatar_medium: &'resp str,
 }
 
 /// `GET /callback/userinfo`
@@ -164,15 +157,11 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
         sub: &me.openid,
         name: &userinfo.nickname,
         picture: &userinfo.avatar,
+        picture_small: &userinfo.avatar_small,
+        picture_medium: &userinfo.avatar_medium,
         email: (),
         email_verified: (),
-        user_metadata: UserInfoMeta {
-            openid: &me.openid,
-            unionid: &me.unionid,
-            avatar: &userinfo.avatar,
-            avatar_small: &userinfo.avatar_small,
-            avatar_medium: &userinfo.avatar_medium,
-        },
+        unionid: &me.unionid,
     };
     let resp = serde_json::to_value(resp).unwrap();
 
