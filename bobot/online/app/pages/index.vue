@@ -1,9 +1,7 @@
 <template>
   <div>
-    <p>用户：{{ user }}</p>
+    <div>暂未实现</div>
   </div>
 </template>
 
-<script setup lang="ts">
-const user = useSupabaseUser();
-</script>
+<script setup lang="ts"></script>
