@@ -20,8 +20,13 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "bobot-compute-build-files"
           cache-on-failure: true
+          prefix-key: bobot-compute
+          shared-key: build-files
+          add-job-id-key: false
+          add-rust-environment-hash-key: false
+          cache-all-crates: true
+          cache-workspace-crates: true
 
       - name: Add Rust Nightly Component
         run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
