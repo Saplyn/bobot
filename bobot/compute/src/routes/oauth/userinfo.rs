@@ -6,10 +6,47 @@ use axum::{
     http::HeaderMap,
     response::{IntoResponse, Response},
 };
+use serde::{Deserialize, Serialize};
 use tracing::{debug, error, instrument};
 use url::Url;
 
 use crate::primary::{WORKER_SECRET_QQ_OAUTH_ID, state::AppState};
+
+#[derive(Debug, Deserialize)]
+struct QQMe {
+    openid: String,
+    unionid: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct QQUserInfo {
+    #[serde(rename = "figureurl_qq")]
+    avatar: String,
+    #[serde(rename = "figureurl_qq_2")]
+    avatar_medium: String,
+    #[serde(rename = "figureurl_qq_1")]
+    avatar_small: String,
+    nickname: String,
+}
+
+#[derive(Debug, Serialize)]
+struct UserInfo<'resp> {
+    sub: &'resp str,
+    name: &'resp str,
+    picture: &'resp str,
+    email: (),
+    email_verified: (),
+    user_metadata: UserInfoMeta<'resp>,
+}
+
+#[derive(Debug, Serialize)]
+struct UserInfoMeta<'resp> {
+    openid: &'resp str,
+    unionid: &'resp str,
+    avatar: &'resp str,
+    avatar_small: &'resp str,
+    avatar_medium: &'resp str,
+}
 
 /// `GET /callback/userinfo`
 #[instrument(skip_all, level = "debug", name = "oauth-userinfo")]
@@ -63,14 +100,18 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    let me = match resp.json::<serde_json::Value>().await {
-        Ok(token) => token,
+    let me = match resp.json::<QQMe>().await {
+        Ok(me) => me,
         Err(error) => {
             error!(message = "Failed to parse QQ's OAuth (userinfo) response", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    debug!(message = "Got QQ's OAuth me (userinfo) response", response = %me);
+    debug!(
+        message = "Got QQ's OAuth me (userinfo) response",
+        openid = me.openid,
+        unionid = me.unionid,
+    );
 
     // Obtain OAuth APP ID from `env.secret`
     let oauth_id = app_state
@@ -91,7 +132,7 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
     let mut url_queries = url.query_pairs_mut();
     url_queries.append_pair(super::PARAM_ACCESS_TOKEN, &token);
     url_queries.append_pair(super::PARAM_CONSUMER_KEY, &oauth_id);
-    url_queries.append_pair(super::PARAM_OPENID, me["openid"].as_str().unwrap());
+    url_queries.append_pair(super::PARAM_OPENID, &me.openid);
     drop(url_queries);
     debug!(message = "Reconstructed get_user_info URL", %url);
 
@@ -103,28 +144,38 @@ pub async fn handler(headers: HeaderMap, State(app_state): State<AppState>) -> R
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    let mut userinfo = match resp.json::<serde_json::Value>().await {
+    let userinfo = match resp.json::<QQUserInfo>().await {
         Ok(userinfo) => userinfo,
         Err(error) => {
             error!(message = "Failed to parse QQ's get_user_info response", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    debug!(message = "Got QQ's get_user_info response", response = %userinfo);
+    debug!(
+        message = "Got QQ's get_user_info response",
+        avatar = ?userinfo.avatar,
+        avatar_medium = ?userinfo.avatar_medium,
+        avatar_small = ?userinfo.avatar_small,
+        nickname = ?userinfo.nickname,
+    );
 
     // Merge `me` into `userinfo`
-    if !me.is_object() || !userinfo.is_object() {
-        error!(
-            message = "Either `me` or `get_user_info` returned a non-object response",
-            %me,
-            get_user_info = %userinfo
-        );
-    }
-    let userinfo_fields = userinfo.as_object_mut().unwrap();
-    for (field, value) in me.as_object().unwrap() {
-        userinfo_fields.insert(field.to_owned(), value.to_owned());
-    }
+    let resp = UserInfo {
+        sub: &me.openid,
+        name: &userinfo.nickname,
+        picture: &userinfo.avatar,
+        email: (),
+        email_verified: (),
+        user_metadata: UserInfoMeta {
+            openid: &me.openid,
+            unionid: &me.unionid,
+            avatar: &userinfo.avatar,
+            avatar_small: &userinfo.avatar_small,
+            avatar_medium: &userinfo.avatar_medium,
+        },
+    };
+    let resp = serde_json::to_value(resp).unwrap();
 
-    debug!(message = "Merged userinfo response", response = %userinfo);
-    Json(userinfo).into_response()
+    debug!(message = "Merged userinfo response", response = ?resp);
+    Json(resp).into_response()
 }
