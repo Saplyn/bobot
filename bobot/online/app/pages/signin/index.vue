@@ -30,7 +30,10 @@ async function signinWithQQ() {
     },
   });
 
-  if (error) console.error(error);
+  if (error) {
+    console.error(error);
+    console.error(error.toJSON());
+  }
 }
 
 const providers = ref<ButtonProps[]>([
