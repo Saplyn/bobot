@@ -1,0 +1,27 @@
+name: Laboratory
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/dev-laboratory.yml
+    branches:
+      - dev
+
+env:
+  PROJECT_DIR: bobot/spirit/
+
+jobs:
+  laboratory:
+    name: Laboratory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get deployed domain
+        id: domain
+        working-directory: bobot/oauth/
+        run: pipx run tomlq '.routes[] | select(.custom_domain == true) | .pattern' wrangler.toml -r
