@@ -16,6 +16,25 @@ pub async fn handler(
     Query(mut param): Query<Authorize<HashMap<String, String>>>,
     State(bobot): State<BobotOAuth>,
 ) -> Response {
+    match bobot.redirect_uri_is_allowed(&param.redirect_uri).await {
+        Ok(true) => {}
+        Ok(false) => {
+            debug!(
+                message = "Supplied redirect uri is not in allow list",
+                redirect_uri = %param.redirect_uri,
+            );
+            return http::StatusCode::BAD_REQUEST.into_response();
+        }
+        Err(error) => {
+            error!(
+                message = "Failed to check if redirect uri is allowed or not",
+                redirect_uri = %param.redirect_uri,
+                ?error
+            );
+            return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    }
+
     if let Err(error) = bobot
         .store_redirect_uri(&param.state, &param.redirect_uri)
         .await

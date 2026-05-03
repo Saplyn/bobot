@@ -17,6 +17,10 @@ pub async fn handler(
     State(bobot): State<BobotOAuth>,
 ) -> Response {
     let redirect_uri = match bobot.obtain_redirect_uri(&param.state).await {
+        Ok(rows) if rows.is_empty() => {
+            debug!(message = "Redirect uri not found for given state", state = %param.state);
+            return http::StatusCode::BAD_REQUEST.into_response();
+        }
         Ok(rows) => {
             let redirect_uri = rows[0]["redirect_uri"].as_str().unwrap().to_owned();
             debug!(message = "Successfully obtained redirect uri", state = %param.state, %redirect_uri);

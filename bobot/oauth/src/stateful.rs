@@ -24,6 +24,32 @@ impl BobotOAuth {
             .map_err(BobotStatefulError::CouldNotConnect)
     }
 
+    pub async fn redirect_uri_is_allowed(
+        &self,
+        redirect_uri: &str,
+    ) -> Result<bool, BobotStatefulError> {
+        let stateful = self.stateful()?;
+
+        let rows = query!(
+            &stateful,
+            r#"
+                SELECT EXISTS(
+                    SELECT * FROM redirect_uri_allow_list
+                    WHERE redirect_uri == ?1
+                ) AS allowed
+            "#,
+            redirect_uri,
+        )
+        .map_err(BobotStatefulError::PrepareStmt)?
+        .all()
+        .await
+        .map_err(BobotStatefulError::ExecuteQuery)?
+        .results::<serde_json::Value>()
+        .map_err(BobotStatefulError::DatabaseResult)?;
+
+        Ok(rows[0]["allowed"].as_i64() == Some(1))
+    }
+
     pub async fn store_redirect_uri(
         &self,
         state: &str,
