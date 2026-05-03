@@ -50,7 +50,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           packageManager: bun
-          wranglerVersion: latest
+          wranglerVersion: 4.86.0 # FIXME: pinning version before `cloudflare/wrangler-action@v4`
           command: >
             deploy --message "Deployed on GitHub Action
             by ${{ github.actor }}
