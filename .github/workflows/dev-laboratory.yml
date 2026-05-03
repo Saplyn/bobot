@@ -17,11 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    environment:
+      name: laboratory
+      url: ${{ steps.domain.outputs.url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Get deployed domain
+      - name: Get OAuth domain
         id: domain
         working-directory: bobot/oauth/
-        run: pipx run tomlq '.routes[] | select(.custom_domain == true) | .pattern' wrangler.toml -r
+        run: echo "url=https://$(pipx run tomlq '.routes[] | select(.custom_domain == true) | .pattern' wrangler.toml -r)" >> $GITHUB_OUTPUT
+
+      - name: Check OAuth domain
+        run: echo ${{ steps.domain.outputs.url }}
