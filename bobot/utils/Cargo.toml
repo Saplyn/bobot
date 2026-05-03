@@ -10,7 +10,7 @@ publish = false
 # Worker
 worker = { workspace = true }
 # HTTP Server
-tower = { workspace = true, default-features = false }
+tower = { workspace = true }
 http = { workspace = true }
 # Async
 pin-project = { workspace = true }
@@ -19,10 +19,6 @@ tracing = { workspace = true }
 tracing-web = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["time", "json", "ansi"] }
 # Utilities 
-uuid = { workspace = true, default-features = false, features = [
-  "std",
-  "js",
-  "v7",
-] }
+uuid = { workspace = true, features = ["std", "js", "v7"] }
 # WASM
 time = { workspace = true, features = ["wasm-bindgen"] }

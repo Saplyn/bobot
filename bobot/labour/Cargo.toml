@@ -19,10 +19,6 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 # Utilities 
 bobot-utils = { workspace = true }
-uuid = { workspace = true, default-features = false, features = [
-  "std",
-  "js",
-  "v7",
-] }
+uuid = { workspace = true, features = ["std", "js", "v7"] }
 # Rust Pattern
 thiserror = { workspace = true }

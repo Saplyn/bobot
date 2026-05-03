@@ -4,6 +4,7 @@ description = "QQ Connect OAuth compatibility layer for bobot"
 edition.workspace = true
 authors.workspace = true
 publish = false
+build = "build.rs"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -25,10 +26,10 @@ serde_json = { workspace = true }
 # Utilities
 pengu = { workspace = true, features = ["oauth"] }
 bobot-utils = { workspace = true }
-uuid = { workspace = true, default-features = false, features = [
-  "std",
-  "js",
-  "v7",
-] }
+uuid = { workspace = true, features = ["std", "js", "v7"] }
 # Rust Pattern
-thiserror = { version = "2", default-features = false }
+thiserror = { workspace = true }
+
+[build-dependencies]
+toml = { workspace = true, features = ["parse", "serde"] }
+anyhow = { workspace = true }

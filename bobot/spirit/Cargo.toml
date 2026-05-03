@@ -21,8 +21,4 @@ tracing = { workspace = true, features = ["attributes"] }
 # Utilities 
 pengu = { workspace = true, features = ["bot"] }
 bobot-utils = { workspace = true }
-uuid = { workspace = true, default-features = false, features = [
-  "std",
-  "js",
-  "v7",
-] }
+uuid = { workspace = true, features = ["std", "js", "v7"] }
