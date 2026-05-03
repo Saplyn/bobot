@@ -61,4 +61,4 @@ jobs:
       - name: Get deployed domain
         id: domain
         working-directory: ${{ env.PROJECT_DIR }}
-        run: echo "url=$(pix run tomlq '.routes[] | select(.custom_domain == true) | .pattern' wrangler.toml -r)" >> $GITHUB_OUTPUT
+        run: echo "url=$(pipx run tomlq '.routes[] | select(.custom_domain == true) | .pattern' wrangler.toml -r)" >> $GITHUB_OUTPUT
