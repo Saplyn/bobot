@@ -1,0 +1,34 @@
+[package]
+name = "bobot-oauth"
+description = "QQ Connect OAuth compatibility layer for bobot"
+edition.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Worker
+worker = { workspace = true, features = ["http", "axum", "d1"] }
+worker-macros = { workspace = true, features = ["http"] }
+# HTTP Server
+axum = { workspace = true, features = ["json", "query", "form"] }
+http = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true, features = ["cors"] }
+# Tracing
+tracing = { workspace = true, features = ["attributes"] }
+# Encoding
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+# Utilities
+pengu = { workspace = true, features = ["oauth"] }
+bobot-utils = { workspace = true }
+uuid = { workspace = true, default-features = false, features = [
+  "std",
+  "js",
+  "v7",
+] }
+# Rust Pattern
+thiserror = { version = "2", default-features = false }

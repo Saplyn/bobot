@@ -1,0 +1,28 @@
+[package]
+name = "bobot-spirit"
+description = "QQ Bot Callback handler for bobot"
+edition.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Worker
+worker = { workspace = true, features = ["http", "axum"] }
+# HTTP Server
+axum = { workspace = true, features = ["json"] }
+http = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true, features = ["cors"] }
+# Tracing
+tracing = { workspace = true, features = ["attributes"] }
+# Utilities 
+pengu = { workspace = true, features = ["bot"] }
+bobot-utils = { workspace = true }
+uuid = { workspace = true, default-features = false, features = [
+  "std",
+  "js",
+  "v7",
+] }

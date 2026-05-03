@@ -1,0 +1,28 @@
+[package]
+name = "bobot-labour"
+description = "Scheduled events handler for bobot"
+edition.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Worker
+worker = { workspace = true, features = ["d1"] }
+worker-macros = { workspace = true }
+# Tracing
+tracing = { workspace = true }
+# Encoding
+serde = { workspace = true }
+serde_json = { workspace = true }
+# Utilities 
+bobot-utils = { workspace = true }
+uuid = { workspace = true, default-features = false, features = [
+  "std",
+  "js",
+  "v7",
+] }
+# Rust Pattern
+thiserror = { workspace = true }

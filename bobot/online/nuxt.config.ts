@@ -6,6 +6,8 @@ export default defineNuxtConfig({
   modules: ["@nuxt/icon", "@nuxt/ui", "@nuxtjs/supabase"],
   css: ["~/assets/css/main.css"],
   supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
     useSsrCookies: false,
     redirectOptions: {
       login: "/signin",

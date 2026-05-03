@@ -2,7 +2,7 @@ use serde::Serialize;
 use serde_repr::Serialize_repr as SerializeRepr;
 
 use crate::bot::{
-    BotClient, BotClientError,
+    BotClient,
     messaging::{Ark, Keyboard, Markdown, Media, MessageReference},
 };
 
@@ -131,11 +131,10 @@ impl BotClient {
         &self,
         user_openid: &str,
         message: &DirectMessage,
-    ) -> Result<reqwest::Response, BotClientError> {
+    ) -> reqwest::Result<reqwest::Response> {
         let url = format!("{}/v2/users/{user_openid}/messages", Self::OPENAPI_URL);
 
-        let resp = self
-            .req_client
+        self.reqwest
             .post(url)
             .header(
                 "Authorization",
@@ -143,8 +142,6 @@ impl BotClient {
             )
             .json(message)
             .send()
-            .await?;
-
-        Ok(resp)
+            .await
     }
 }

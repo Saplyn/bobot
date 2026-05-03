@@ -6,21 +6,26 @@ edition.workspace = true
 authors.workspace = true
 
 [features]
-default = ["bot"]
+default = ["bot", "oauth", "error"]
 bot = []
+oauth = []
+error = []
 
 [dependencies]
 # Async
-tokio = { version = "1", features = ["sync"] }
-# HTTP
-reqwest = { version = "0.13", features = ["json"] }
+tokio = { workspace = true, features = ["sync"] }
+# HTTP Client
+reqwest = { workspace = true, features = ["json", "query"] }
 # Crypto
-ed25519-dalek = "3.0.0-pre.6"
+ed25519-dalek = { workspace = true }
 # WASM
-time = { version = "0.3", features = ["wasm-bindgen"] }
+time = { workspace = true, features = ["wasm-bindgen"] }
 # Rust Pattern
-thiserror = "2"
+thiserror = { workspace = true }
 # Encoding
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-serde_repr = "0.1"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_repr = { workspace = true }
+url = { workspace = true }
+# Tracing
+tracing = { workspace = true }

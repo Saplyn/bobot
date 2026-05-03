@@ -1,0 +1,63 @@
+name: Deploy Bobot OAuth
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - bobot/oauth/**
+      - Cargo.toml
+      - Cargo.lock
+    branches:
+      - main
+
+env:
+  PROJECT_DIR: bobot/oauth/
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: bobot-oauth
+      url: ${{ steps.domain.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          prefix-key: bobot-oauth
+          shared-key: build-files
+          add-job-id-key: false
+          add-rust-environment-hash-key: false
+          cache-all-crates: true
+          cache-workspace-crates: true
+
+      - name: Add Rust nightly component
+        run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Deploy to Cloudflare Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          workingDirectory: ${{ env.PROJECT_DIR }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          packageManager: bun
+          wranglerVersion: latest
+          command: >
+            deploy --message "Deployed on GitHub Action
+            by ${{ github.actor }}
+            from ${{ github.repository }}:${{ github.sha }}
+            - ${{ github.event.head_commit.message }}"
+
+      - name: Get deployed domain
+        id: domain
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: echo "url=$(tomlq '.routes[] | select(.custom_domain == true) | .pattern' wrangler.toml -r)" >> $GITHUB_OUTPUT

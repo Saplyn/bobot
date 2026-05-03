@@ -1,7 +1,13 @@
 <template>
   <div>
-    <div>暂未实现</div>
+    <div>{{ user }}</div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const supabase = useSupabaseClient();
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+</script>

@@ -1,0 +1,26 @@
+#:schema ../../node_modules/wrangler/config-schema.json
+
+name = "bobot-spirit"
+main = "build/index.js"
+compatibility_date = "2026-05-02"
+workers_dev = false
+
+[build]
+command = "cargo install worker-build && worker-build --profile=wasm-release --panic-unwind"
+
+[[routes]]
+zone_name = "saplyn.site"
+pattern = "spirit.bobo.saplyn.site"
+custom_domain = true
+
+[observability.logs]
+enabled = true
+invocation_logs = false
+head_sampling_rate = 1.00
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1.00
+
+[secrets]
+required = ["QQ_BOT_ID", "QQ_BOT_SECRET"]

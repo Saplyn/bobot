@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use thiserror::Error;
 use time::{Duration, OffsetDateTime};
 use tokio::sync::RwLock;
 
@@ -9,12 +8,9 @@ pub mod callback_payload;
 pub mod messaging;
 pub mod validation;
 
-#[derive(Error, Debug)]
-pub enum BotClientError {
-    #[error("{0}")]
-    Reqwest(#[from] reqwest::Error),
-}
-
+/// A client to make QQ Bot request with
+///
+/// This struct is cheap to `Clone`
 #[derive(Debug, Clone)]
 pub struct BotClient {
     app_id: Arc<String>,
@@ -23,7 +19,7 @@ pub struct BotClient {
     access_token: Arc<RwLock<Option<AccessToken>>>,
     signing_key: Arc<ed25519_dalek::SigningKey>,
 
-    req_client: reqwest::Client,
+    reqwest: reqwest::Client,
 }
 
 impl BotClient {
@@ -37,10 +33,16 @@ impl BotClient {
             app_secret: Arc::new(app_secret),
             access_token: Arc::new(RwLock::new(access_token)),
             signing_key: Arc::new(signing_key),
-            req_client: reqwest::Client::new(),
+            reqwest: reqwest::Client::new(),
         }
     }
-    async fn access_token(&self) -> Result<String, BotClientError> {
+    pub fn app_id(&self) -> &str {
+        &self.app_id
+    }
+    pub fn app_secret(&self) -> &str {
+        &self.app_secret
+    }
+    async fn access_token(&self) -> reqwest::Result<String> {
         if self.access_token.read().await.is_none() {
             self.refresh_access_token().await?;
         }
@@ -51,7 +53,7 @@ impl BotClient {
             .as_ref()
             .map(|access_token| access_token.token.clone())
         else {
-            unreachable!("refresh token succeeded, token should be some");
+            unreachable!("refresh token succeeded, `access_token` should be some");
         };
         Ok(token)
     }
@@ -79,7 +81,7 @@ pub struct AccessToken {
 }
 
 impl AccessToken {
-    pub fn new(token: String, expires_in_secs: u64) -> Self {
+    pub fn new(token: String, expires_in_secs: u32) -> Self {
         let expires = OffsetDateTime::now_utc() + Duration::seconds(expires_in_secs as i64);
 
         Self { token, expires }

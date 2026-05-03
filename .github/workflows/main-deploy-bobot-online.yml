@@ -3,11 +3,15 @@ name: Deploy Bobot Online
 on:
   workflow_dispatch:
   push:
+    paths:
+      - bobot/online/**
+      - package.json
+      - bun.lock
     branches:
       - main
 
 env:
-  PROJECT_DIR: bobot/online
+  PROJECT_DIR: bobot/online/
 
 jobs:
   build:
@@ -22,18 +26,18 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: bun install
         working-directory: ${{ env.PROJECT_DIR }}
 
-      - name: Build Application
+      - name: Build application
         run: bun run build --preset github_pages
         working-directory: ${{ env.PROJECT_DIR }}
         env:
           NUXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ vars.SUPABASE_KEY }}
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: ${{ env.PROJECT_DIR }}/.output/public
@@ -46,7 +50,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: bobot-online
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages

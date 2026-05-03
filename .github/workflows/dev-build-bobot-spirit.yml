@@ -1,0 +1,55 @@
+name: Build Bobot Spirit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - bobot/spirit/**
+      - Cargo.toml
+      - Cargo.lock
+    branches:
+      - dev
+
+env:
+  PROJECT_DIR: bobot/spirit/
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          prefix-key: bobot-spirit
+          shared-key: build-files
+          add-job-id-key: false
+          add-rust-environment-hash-key: false
+          cache-all-crates: true
+          cache-workspace-crates: true
+
+      - name: Add Rust nightly component
+        run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Build
+        uses: cloudflare/wrangler-action@v3
+        with:
+          workingDirectory: ${{ env.PROJECT_DIR }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: latest
+          packageManager: bun
+          command: >
+            deploy --dry-run --message "Deployed on GitHub Action
+            by ${{ github.actor }}
+            from ${{ github.repository }}:${{ github.sha }}
+            - ${{ github.event.head_commit.message }}"

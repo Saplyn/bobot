@@ -3,11 +3,15 @@ name: Build Bobot Online
 on:
   workflow_dispatch:
   push:
+    paths:
+      - bobot/online/**
+      - package.json
+      - bun.lock
     branches:
       - dev
 
 env:
-  PROJECT_DIR: bobot/online
+  PROJECT_DIR: bobot/online/
 
 jobs:
   build:
@@ -22,11 +26,11 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: bun install
         working-directory: ${{ env.PROJECT_DIR }}
 
-      - name: Build Application
+      - name: Build application
         run: bun run build --preset github_pages
         working-directory: ${{ env.PROJECT_DIR }}
         env:

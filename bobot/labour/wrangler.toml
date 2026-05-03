@@ -1,0 +1,27 @@
+#:schema ../../node_modules/wrangler/config-schema.json
+
+name = "bobot-labour"
+main = "build/index.js"
+compatibility_date = "2026-05-02"
+workers_dev = false
+
+[build]
+command = "cargo install worker-build && worker-build --profile=wasm-release --panic-unwind"
+
+[triggers]
+crons = ["0 */2 * * *"]
+
+[observability.logs]
+enabled = true
+invocation_logs = false
+head_sampling_rate = 1.00
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1.00
+
+[[d1_databases]]
+binding = "BOBOT_STATEFUL"
+database_name = "bobot-stateful"
+database_id = "39a165b6-ca4d-4837-81ef-e312a4d05b4c"
+migrations_dir = "../stateful/"

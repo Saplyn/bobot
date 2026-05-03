@@ -1,17 +1,59 @@
 [workspace]
-members = ["crates/novus", "crates/pengu", "bobot/core", "bobot/compute"]
+members = [
+  "crates/novus",
+  "crates/pengu",
+  "bobot/core",
+  "bobot/spirit",
+  "bobot/labour",
+  "bobot/oauth",
+  "bobot/utils",
+]
 resolver = "3"
 
 [workspace.package]
 authors = ["Saplyn"]
 edition = "2024"
 
-[workspace.dependencies]
-bobot-core = { path = "./bobot/core/" }
-novus = { path = "./crates/novus/" }
-pengu = { path = "./crates/pengu/" }
-
 [profile.wasm-release]
 inherits = "release"
 lto = true
 codegen-units = 1
+
+[workspace.dependencies]
+# Project local
+novus = { path = "./crates/novus/" }
+pengu = { path = "./crates/pengu/", default-features = false }
+bobot-core = { path = "./bobot/core/" }
+bobot-utils = { path = "./bobot/utils/" }
+# Async
+tokio = { version = "1", default-features = false }
+pin-project = { version = "1", default-features = false }
+# Worker
+worker = { version = "0.8", default-features = false }
+worker-macros = { version = "0.8", default-features = false }
+# HTTP Server
+axum = { version = "0.8", default-features = false }
+http = { version = "1", default-features = false }
+hyper = { version = "1", default-features = false }
+tower = { version = "0.5", default-features = false }
+tower-service = { version = "0.3", default-features = false }
+tower-http = { version = "0.6", default-features = false }
+# HTTP Client
+reqwest = { version = "0.13", default-features = false }
+# Tracing
+tracing = { version = "0.1", default-features = false }
+tracing-web = { version = "0.1", default-features = false }
+tracing-subscriber = { version = "0.3", default-features = false }
+# Encoding
+serde = { version = "1", default-features = false }
+serde_json = { version = "1", default-features = false }
+serde_repr = { version = "0.1", default-features = false }
+# Utilities
+url = { version = "2", default-features = false }
+uuid = { version = "1", default-features = false }
+# WASM
+time = { version = "0.3", default-features = false }
+# Crypto
+ed25519-dalek = { version = "3.0.0-pre.6", default-features = false }
+# Rust Pattern
+thiserror = { version = "2", default-features = false }

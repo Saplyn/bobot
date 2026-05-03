@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::bot::{AccessToken, BotClient, BotClientError};
+use crate::bot::{AccessToken, BotClient};
 
 /// Request payload for refreshing a bot access token.
 #[derive(Debug, Serialize)]
@@ -27,14 +27,14 @@ pub struct RefreshAccessTokenResp {
 
     /// The number of seconds before the token expires.
     #[serde(rename = "expires_in")]
-    pub expires_in_secs: u64,
+    pub expires_in_secs: u32,
 }
 
 impl BotClient {
     /// Refreshes the bot's access token by making a POST request to QQ Bot Server.
-    pub async fn refresh_access_token(&self) -> Result<(), BotClientError> {
+    pub async fn refresh_access_token(&self) -> reqwest::Result<()> {
         let resp = self
-            .req_client
+            .reqwest
             .post(RefreshAccessToken::URL)
             .json(&RefreshAccessToken {
                 app_id: &self.app_id,

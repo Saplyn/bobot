@@ -19,7 +19,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Generate Bun Lockfile If Not Exist
+      - name: Generate Bun lockfile if not exist
         run: |
           if [ ! -f bun.lockb ] && [ ! -f bun.lock ]; then
             echo "No Bun lockfile found. Installing dependencies..."
@@ -28,7 +28,7 @@ jobs:
             echo "Bun lockfile exists. Skipping install."
           fi
 
-      - name: Bun Audit
+      - name: Bun audit
         run: bun audit --audit-level=high
 
   cargo-audit:
@@ -40,13 +40,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Cargo Bin-Install
+      - name: Setup Cargo bin-install
         uses: cargo-bins/cargo-binstall@main
 
-      - name: Setup Cargo Audit
+      - name: Setup Cargo audit
         run: cargo-binstall cargo-audit --no-confirm
 
-      - name: Generate Cargo Lockfile If Not Exist
+      - name: Generate Cargo lockfile if not exist
         run: |
           if [ ! -f Cargo.lock ]; then
             echo "No Cargo.lock found. Generating..."
@@ -55,5 +55,5 @@ jobs:
             echo "Cargo.lock exists. Skipping generation."
           fi
 
-      - name: Cargo Audit
+      - name: Cargo audit
         run: cargo audit --deny warnings
