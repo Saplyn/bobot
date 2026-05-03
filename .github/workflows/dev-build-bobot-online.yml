@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - .github/workflows/dev-build-bobot-online.yml
       - bobot/online/**
       - package.json
       - bun.lock

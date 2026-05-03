@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - .github/workflows/dev-build-bobot-labour.yml
       - bobot/labour/**
       - Cargo.toml
       - Cargo.lock

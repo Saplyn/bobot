@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - .github/workflows/dev-build-bobot-spirit.yml
       - bobot/spirit/**
       - Cargo.toml
       - Cargo.lock

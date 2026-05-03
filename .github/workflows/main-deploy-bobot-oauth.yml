@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - .github/workflows/main-deploy-bobot-oauth.yml
       - bobot/oauth/**
       - Cargo.toml
       - Cargo.lock
