@@ -1,4 +1,4 @@
-name: Dependency Audit
+name: Dependency audit
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   bun-audit:
-    name: Bun Audit
+    name: Bun audit
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,20 +19,14 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Generate Bun lockfile if not exist
-        run: |
-          if [ ! -f bun.lockb ] && [ ! -f bun.lock ]; then
-            echo "No Bun lockfile found. Installing dependencies..."
-            bun install
-          else
-            echo "Bun lockfile exists. Skipping install."
-          fi
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
       - name: Bun audit
         run: bun audit --audit-level=high
 
-  cargo-audit:
-    name: Cargo Audit
+  bun-outdated:
+    name: Bun outdated check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,20 +34,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Cargo bin-install
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Bun outdated check
+        run: bun outdated
+
+  cargo-audit:
+    name: Cargo audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup `cargo-binstall`
         uses: cargo-bins/cargo-binstall@main
 
-      - name: Setup Cargo audit
+      - name: Setup `cargo-audit`
         run: cargo-binstall cargo-audit --no-confirm
-
-      - name: Generate Cargo lockfile if not exist
-        run: |
-          if [ ! -f Cargo.lock ]; then
-            echo "No Cargo.lock found. Generating..."
-            cargo generate-lockfile
-          else
-            echo "Cargo.lock exists. Skipping generation."
-          fi
 
       - name: Cargo audit
         run: cargo audit --deny warnings
+
+  cargo-outdated:
+    name: Cargo outdated check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup `cargo-binstall`
+        uses: cargo-bins/cargo-binstall@main
+
+      - name: Setup `cargo-outdated`
+        run: cargo-binstall cargo-outdated --no-confirm
+
+      - name: Cargo outdated check
+        run: cargo outdated
