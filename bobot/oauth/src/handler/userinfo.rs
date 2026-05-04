@@ -99,6 +99,7 @@ pub async fn handler(headers: HeaderMap, State(bobot): State<BobotOAuth>) -> Res
         sub: &me_resp.openid,
         name,
         picture,
+        union_id: me_resp.unionid.as_ref().unwrap(),
     };
 
     Json(resp).into_response()
@@ -109,6 +110,7 @@ struct UserInfo<'resp> {
     sub: &'resp str,
     name: &'resp str,
     picture: &'resp str,
+    union_id: &'resp str,
 }
 
 #[derive(Debug, Error)]
