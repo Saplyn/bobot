@@ -5,7 +5,7 @@ use axum::{
     extract::State,
     response::{IntoResponse, Response},
 };
-use pengu::oauth::token::Token;
+use pengu::oauth::token::{Token, TokenResp};
 use tracing::{debug, error, instrument};
 
 use crate::state::BobotOAuth;
@@ -28,14 +28,22 @@ pub async fn handler(
         }
     };
     let resp_status = resp.status();
-    let resp = match resp.json::<serde_json::Value>().await {
+    let resp = match resp.json::<TokenResp>().await {
         Ok(resp) => resp,
         Err(error) => {
             error!(message = "Failed to parse QQ's OAuth token response", %error);
             return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    debug!(message = "Got QQ's OAuth token response", response = %resp);
+    debug!(message = "Got QQ's OAuth token response", response = ?resp);
+
+    if let Err(error) = bobot
+        .cache_oauth_token(&resp.access_token, &resp.refresh_token, resp.expires_in)
+        .await
+    {
+        error!(message = "Failed to store temporary user profile (token, expiration)", %error);
+        return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
 
     (resp_status, Json(resp)).into_response()
 }

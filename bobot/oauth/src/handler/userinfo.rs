@@ -9,15 +9,14 @@ use pengu::oauth::{
     me::{Me, MeFmt, MeRequestUnionId, MeResp},
 };
 use serde::Serialize;
-use thiserror::Error;
 use tracing::{debug, error, instrument};
 
-use crate::state::BobotOAuth;
+use crate::{handler::extract_auth, state::BobotOAuth};
 
 #[worker::send]
 #[instrument(skip_all, level = "debug", name = "userinfo")]
 pub async fn handler(headers: HeaderMap, State(bobot): State<BobotOAuth>) -> Response {
-    let token = match extract_token(&headers) {
+    let token = match extract_auth(&headers) {
         Ok(token) => token,
         Err(error) => {
             debug!(message = "Reject because authorization failed", %error);
@@ -99,8 +98,15 @@ pub async fn handler(headers: HeaderMap, State(bobot): State<BobotOAuth>) -> Res
         sub: &me_resp.openid,
         name,
         picture,
-        union_id: me_resp.unionid.as_ref().unwrap(),
     };
+
+    if let Err(error) = bobot
+        .link_oauth_token_with_profile(token, &me_resp.openid, me_resp.unionid.as_ref().unwrap())
+        .await
+    {
+        error!(message = "Failed to store temporary user profile (oauth_id, union_id)", %error);
+        return http::StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
 
     Json(resp).into_response()
 }
@@ -110,27 +116,4 @@ struct UserInfo<'resp> {
     sub: &'resp str,
     name: &'resp str,
     picture: &'resp str,
-    union_id: &'resp str,
-}
-
-#[derive(Debug, Error)]
-pub enum ExtractTokenError {
-    #[error("no authorization header found")]
-    NoAuthHeader,
-    #[error("failed to parse header because of {0}")]
-    ToStr(#[from] http::header::ToStrError),
-    #[error("the authorization is malformed")]
-    MalformedHeader,
-}
-
-fn extract_token(headers: &HeaderMap) -> Result<&str, ExtractTokenError> {
-    let auth = headers
-        .get(http::header::AUTHORIZATION)
-        .ok_or(ExtractTokenError::NoAuthHeader)?;
-
-    let mut split = auth.to_str()?.split(' ');
-    let _bearer = split.next().ok_or(ExtractTokenError::MalformedHeader)?;
-    let token = split.next().ok_or(ExtractTokenError::MalformedHeader)?;
-
-    Ok(token)
 }

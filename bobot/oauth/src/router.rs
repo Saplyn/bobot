@@ -6,7 +6,7 @@ use tracing::{Level, span};
 use uuid::Uuid;
 
 use crate::{
-    handler::{authorize, callback, token, userinfo},
+    handler::{authorize, callback, profile, token, userinfo},
     state::BobotOAuth,
 };
 
@@ -23,6 +23,7 @@ pub fn router(bobot: BobotOAuth) -> axum::Router {
         .route("/token", post(token::handler))
         .route("/userinfo", get(userinfo::handler))
         .route("/callback", get(callback::handler))
+        .route("/profile", get(profile::handler))
         .layer(ServiceBuilder::new().layer(trace).layer(cors))
         .with_state(bobot)
 }

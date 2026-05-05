@@ -13,18 +13,19 @@ impl BobotQQBot {
     pub const WORKER_SECRET_QQ_BOT_ID: &str = "QQ_BOT_ID";
     pub const WORKER_SECRET_QQ_BOT_SECRET: &str = "QQ_BOT_SECRET";
 
-    pub fn new(env: worker::Env, ctx: worker::Context) -> Self {
+    pub async fn new(env: worker::Env, ctx: worker::Context) -> Self {
+        let worker = Arc::new(WorkerFetch { env, ctx });
         let qqbot = BotClient::new(
-            env.secret(Self::WORKER_SECRET_QQ_BOT_ID)
-                .unwrap_or_else(|e| panic!("{e}"))
-                .to_string(),
-            env.secret(Self::WORKER_SECRET_QQ_BOT_SECRET)
-                .unwrap_or_else(|e| panic!("{e}"))
-                .to_string(),
+            worker
+                .secret_from_store(Self::WORKER_SECRET_QQ_BOT_ID)
+                .await
+                .unwrap_or_else(|e| panic!("{e}")),
+            worker
+                .secret_from_store(Self::WORKER_SECRET_QQ_BOT_SECRET)
+                .await
+                .unwrap_or_else(|e| panic!("{e}")),
             None,
         );
-
-        let worker = Arc::new(WorkerFetch { env, ctx });
 
         Self { worker, qqbot }
     }

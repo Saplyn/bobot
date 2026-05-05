@@ -52,10 +52,13 @@ serde_repr = { version = "0.1", default-features = false }
 toml = { version = "1", default-features = false }
 url = { version = "2", default-features = false }
 uuid = { version = "1", default-features = false }
+hex = { version = "0.4", default-features = false }
 # WASM
 time = { version = "0.3", default-features = false }
 # Crypto
 ed25519-dalek = { version = "3.0.0-pre.6", default-features = false }
+subtle = { version = "2", default-features = false }
+sha2 = { version = "0.11", default-features = false }
 # Rust Pattern
 thiserror = { version = "2", default-features = false }
 anyhow = { version = "1", default-features = false }

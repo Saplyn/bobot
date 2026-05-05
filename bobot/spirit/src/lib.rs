@@ -17,7 +17,7 @@ async fn fetch(
 ) -> worker::Result<axum::http::Response<axum::body::Body>> {
     init_once(&[set_tracing, set_panic_hook]);
 
-    let bobot = BobotQQBot::new(env, ctx);
+    let bobot = BobotQQBot::new(env, ctx).await;
     let mut router = router(bobot);
 
     Ok(router.call(req).await?)

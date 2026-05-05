@@ -4,6 +4,7 @@ name = "bobot-oauth"
 main = "build/index.js"
 compatibility_date = "2026-05-02"
 workers_dev = false
+preview_urls = false
 
 [build]
 command = "cargo install worker-build && worker-build --profile=wasm-release --panic-unwind"
@@ -22,8 +23,20 @@ head_sampling_rate = 1.00
 enabled = true
 head_sampling_rate = 1.00
 
-[secrets]
-required = ["QQ_OAUTH_ID", "QQ_OAUTH_SECRET"]
+[[secrets_store_secrets]]
+binding = "QQ_OAUTH_ID"
+store_id = "7afbc0c2179847f893ba21721f5d8df4"
+secret_name = "QQ_OAUTH_ID"
+
+[[secrets_store_secrets]]
+binding = "QQ_OAUTH_SECRET"
+store_id = "7afbc0c2179847f893ba21721f5d8df4"
+secret_name = "QQ_OAUTH_SECRET"
+
+[[secrets_store_secrets]]
+binding = "LYN_KEY_SUPABASE_SHA256"
+store_id = "7afbc0c2179847f893ba21721f5d8df4"
+secret_name = "LYN_KEY_SUPABASE_SHA256"
 
 [[d1_databases]]
 binding = "BOBOT_STATEFUL"
