@@ -105,7 +105,7 @@ impl BobotOAuth {
         &self,
         token: &str,
         refresh_token: &str,
-        expires_in: u32,
+        expires_in: &str,
     ) -> Result<Vec<serde_json::Value>, BobotStatefulError> {
         let stateful = self.stateful()?;
 

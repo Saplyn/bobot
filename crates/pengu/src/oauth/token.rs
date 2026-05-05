@@ -63,7 +63,7 @@ impl<Extra> Token<Extra> {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenResp {
     pub access_token: String,
-    pub expires_in: u32,
+    pub expires_in: String,
     pub refresh_token: String,
 }
 
