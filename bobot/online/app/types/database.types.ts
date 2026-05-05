@@ -1151,36 +1151,18 @@ export type Database = {
       user_permission: {
         Row: {
           id: string
+          moderate: boolean
+          verified: boolean
         }
         Insert: {
-          id?: string
-        }
-        Update: {
-          id?: string
-        }
-        Relationships: []
-      }
-      user_profile: {
-        Row: {
           id: string
-          name: string
-          oauth_id: string
-          qqbot_id: string | null
-          union_id: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          oauth_id: string
-          qqbot_id?: string | null
-          union_id: string
+          moderate?: boolean
+          verified?: boolean
         }
         Update: {
           id?: string
-          name?: string
-          oauth_id?: string
-          qqbot_id?: string | null
-          union_id?: string
+          moderate?: boolean
+          verified?: boolean
         }
         Relationships: []
       }
