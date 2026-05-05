@@ -112,8 +112,13 @@ impl BobotOAuth {
         let rows = query!(
             &stateful,
             r#"
-                INSERT INTO user_profile_temporary (token, refresh_token, expiration)
-                VALUES (?1, ?2, datetime('now', '+' || ?3 || ' seconds'));
+                INSERT INTO user_auth_profile (token, refresh_token, expiration, stale)
+                VALUES (
+                    ?1,
+                    ?2,
+                    datetime('now', '+' || ?3 || ' seconds'),
+                    datetime('now', '+8 hours')
+                );
             "#,
             token,
             refresh_token,
@@ -140,7 +145,7 @@ impl BobotOAuth {
         let rows = query!(
             &stateful,
             r#"
-                UPDATE user_profile_temporary
+                UPDATE user_auth_profile 
                 SET oauth_id = ?1,
                     union_id = ?2
                 WHERE token = ?3;
@@ -168,8 +173,8 @@ impl BobotOAuth {
         let rows = query!(
             &stateful,
             r#"
-                UPDATE user_profile_temporary
-                SET fetched = 1
+                UPDATE user_auth_profile 
+                SET stale = datetime('now')
                 WHERE oauth_id = ?1
                 RETURNING token, refresh_token, expiration, oauth_id, union_id;
             "#,

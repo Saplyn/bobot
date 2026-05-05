@@ -26,7 +26,7 @@ impl super::Scheduled for Job {
     type Error = Error;
 
     fn make_span(&self, _: &str, _: &WorkerScheduled) -> tracing::Span {
-        span!(Level::DEBUG, "cleanup-stale-oauth-redirects")
+        span!(Level::DEBUG, "cleanup-stale-user-auth-profile")
     }
 
     fn should_execute(&self, cron: &str, _: &WorkerScheduled) -> bool {
@@ -42,8 +42,8 @@ impl super::Scheduled for Job {
         let rows = query!(
             &stateful,
             r#"
-                DELETE FROM oauth_redirects
-                WHERE expiration <= datetime('now');
+                DELETE FROM user_auth_profile
+                WHERE stale <= datetime('now');
             "#,
         )
         .map_err(Error::PrepareSql)?

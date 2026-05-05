@@ -9,7 +9,7 @@ workers_dev = false
 command = "cargo install worker-build && worker-build --profile=wasm-release --panic-unwind"
 
 [triggers]
-crons = ["0 */2 * * *"]
+crons = ["0 */4 * * *"]
 
 [observability.logs]
 enabled = true

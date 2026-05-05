@@ -2,10 +2,11 @@ use bobot_utils::worker::WorkerScheduled;
 use tracing::{Instrument, debug, error};
 
 pub mod cleanup_stale_oauth_redirects;
+pub mod cleanup_stale_user_auth_profile;
 
 const WORKER_D1_BOBOT_STATEFUL: &str = "BOBOT_STATEFUL";
 
-const CRON_EVERY_TWO_HOUR: &str = "0 */2 * * *";
+const CRON_EVERY_FOUR_HOUR: &str = "0 */4 * * *";
 
 pub trait Scheduled {
     type Value: std::fmt::Debug;

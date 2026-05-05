@@ -6,7 +6,7 @@ use tracing::{Instrument, Level, span};
 use uuid::Uuid;
 use worker::event;
 
-use crate::job::cleanup_stale_oauth_redirects;
+use crate::job::{cleanup_stale_oauth_redirects, cleanup_stale_user_auth_profile};
 
 mod job;
 
@@ -22,6 +22,7 @@ async fn scheduled(event: worker::ScheduledEvent, env: worker::Env, ctx: worker:
         let cron = worker.event.cron();
 
         job::try_run(cleanup_stale_oauth_redirects::Job, &cron, &worker).await;
+        job::try_run(cleanup_stale_user_auth_profile::Job, &cron, &worker).await;
     }
     .instrument(span)
     .await
