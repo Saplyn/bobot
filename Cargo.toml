@@ -21,10 +21,10 @@ codegen-units = 1
 
 [workspace.dependencies]
 # Project local
-novus = { path = "./crates/novus/" }
+novus = { path = "./crates/novus/", default-features = false }
 pengu = { path = "./crates/pengu/", default-features = false }
-bobot-core = { path = "./bobot/core/" }
-bobot-utils = { path = "./bobot/utils/" }
+bobot-core = { path = "./bobot/core/", default-features = false }
+bobot-utils = { path = "./bobot/utils/", default-features = false }
 # Async
 tokio = { version = "1", default-features = false }
 pin-project = { version = "1", default-features = false }
