@@ -56,11 +56,18 @@ dev project="":
                 dev_page
                 exit 0
             fi
-            {{ throw("Not inside any dev-able sub-project") }}
+            {{ throw("Not inside any dev-able sub-project, specify 'db' for local database") }}
             ;;
     esac
 
-alias start := dev
+[arg("project", pattern="""
+    oauth|labour|spirit
+    |online
+    |db|database|supabase|spb
+""")]
+[no-cd]
+start project="db":
+    @just dev {{ project }}
 
 stop:
     #!/usr/bin/env bash
