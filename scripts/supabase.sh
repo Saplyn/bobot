@@ -1,22 +1,21 @@
 #!/bin/bash
+set -euo pipefail
 
 supabase() {
-  bunx supabase --network-id local-network "$@"
+    bunx supabase --network-id local-network "$@"
 }
 
 case "$1" in
 "restart")
-  supabase stop || exit 1
-  supabase start || exit 1
-  exit 0
-  ;;
-"typed")
-  supabase gen types --linked \
-    --schema public \
-    --schema graphql_public \
-    --schema auth || exit 1
-  exit 0
-  ;;
+    supabase stop
+    supabase start
+    ;;
+"gentype" | "typegen" | "typed")
+    supabase gen types --linked \
+        --schema public \
+        --schema graphql_public \
+        --schema auth
+    ;;
 esac
 
 supabase "$@"

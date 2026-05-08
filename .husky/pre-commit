@@ -4,5 +4,5 @@
 gitleaks git
 gitleaks git . --staged --no-banner
 
-# Run `bobot-pre-commit`
-bobot pre-commit
+# Run code audit
+just audit
