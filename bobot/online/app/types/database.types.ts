@@ -1171,7 +1171,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      my_permission: {
+        Args: never
+        Returns: {
+          id: string
+          moderate: boolean
+          verified: boolean
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_permission"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
