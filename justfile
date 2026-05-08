@@ -15,11 +15,7 @@ run(cmd) := f"""
     {{cmd}}
 """
 
-[arg("project", pattern="""
-    |oauth|labour|spirit
-    |online
-    |db|database|supabase|spb
-""")]
+[arg("project", pattern="|oauth|labour|spirit|online|db|database|supabase|spb")]
 [no-cd]
 dev project="":
     #!/usr/bin/env bash
@@ -60,11 +56,7 @@ dev project="":
             ;;
     esac
 
-[arg("project", pattern="""
-    oauth|labour|spirit
-    |online
-    |db|database|supabase|spb
-""")]
+[arg("project", pattern="oauth|labour|spirit|online|db|database|supabase|spb")]
 [no-cd]
 start project="db":
     @just dev {{ project }}
